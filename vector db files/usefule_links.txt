@@ -1,0 +1,5 @@
+#########Trec Medical Dataset#################
+https://trec.nist.gov/data/clinical2016.html
+
+#########Milvus Indexed Dataset#################
+https://drive.google.com/drive/folders/1IELiQofmruiPh4hCxCye0T1UhSIMWitE?usp=sharing
