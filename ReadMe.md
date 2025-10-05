@@ -8,8 +8,8 @@ Platforms
 - Supports Linux and Windows operating systems.
 - Conda environment is mandatory, please install Miniconda or Anaconda if not already installed.
 
-Note
-- The vector database can be used as a ready-made resource. You can skip building it. See vector_db_files/README.md for “Get a ready-to-use vector DB”.
+<!-- Note
+- The vector database can be used as a ready-made resource. You can skip building it. See vector_db_files/README.md for “Get a ready-to-use vector DB”. -->
 
 ## Quick start (raw project run)
 
