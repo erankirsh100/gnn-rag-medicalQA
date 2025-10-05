@@ -18,7 +18,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 import re
 import pandas as pd
-from utils import bert_encode
+from gnn_files.utils import bert_encode
 import json
 from tqdm import tqdm  # make sure to install with: pip install tqdm
 
@@ -43,7 +43,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 import re
 import pandas as pd
-from utils import bert_encode
+# from utils import bert_encode
 import json
 from tqdm import tqdm  # make sure to install with: pip install tqdm
 
@@ -61,7 +61,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from tqdm import tqdm  # pip install tqdm
 from transformers import AutoTokenizer, AutoModel
 
-from utils import bert_encode  # custom function
+# from utils import bert_encode  # custom function
 
 torch_geometric.set_debug(True)
 

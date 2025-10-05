@@ -8,9 +8,9 @@ from sentence_transformers import SentenceTransformer
 import numpy as np
 # from utils import encode_text_and_match_diseases, update_graph_data
 from vector_db_files.searcher_class import MilvusSearcher
-from gnn import DiseaseSymptomGraphGNN
+from gnn_files.gnn import DiseaseSymptomGraphGNN
 import pandas as pd
-from llm_model import run_generation
+from llm_files.llm_model import run_generation
 from time import time
 import os
 from dotenv import load_dotenv
@@ -40,7 +40,7 @@ graph_model = DiseaseSymptomGraphGNN(
 )
 
 print("creating graph model instance")
-graph_model.load_state_dict(torch.load("best_model.pt", map_location=torch.device('cpu')))
+graph_model.load_state_dict(torch.load("gnn_files/best_model.pt", map_location=torch.device('cpu')))
 collection_name = "pmc_trec_2016"
 
 ############# Create searcher instance #############
