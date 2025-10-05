@@ -65,9 +65,9 @@ class DiseaseSymptomGraphGNN(nn.Module):
         dropout: float = 0.5,
         with_bn: bool = True,
         seed: Optional[int] = None,
-        disease_list_path: str = "data/disease_knowledge_graph/disease_csv_files/unique_aliases.csv",
-        symptom_list_path: str = "data/disease_knowledge_graph/disease_csv_files/unique_symptoms.csv",
-        disease_aliases_path: str = "data/disease_knowledge_graph/disease_aliases.json",
+        disease_list_path: str = "data/disease_csv_files/unique_aliases.csv",
+        symptom_list_path: str = "data/disease_csv_files/unique_symptoms.csv",
+        disease_aliases_path: str = "data/disease_aliases.json",
     ):
         super().__init__()
         set_seed(seed)
@@ -94,8 +94,8 @@ class DiseaseSymptomGraphGNN(nn.Module):
         self.disease2id = {d: i for i, d in enumerate(self.disease_list)}
 
         self.main_graph_df = pd.read_csv(dict_paths["main_graph_path"])
-        self.disease_symptom_csv = pd.read_csv(dict_paths["disease_symptom_csv_path"])
-        self.patient_doctor_csv = pd.read_csv(dict_paths["patient_doctor_csv_path"])
+        # self.disease_symptom_csv = pd.read_csv(dict_paths["disease_symptom_csv_path"])
+        # self.patient_doctor_csv = pd.read_csv(dict_paths["patient_doctor_csv_path"])
 
         # Load disease list & mapping
         self.disease_list = sorted(self.main_graph_df["diseases"].dropna().unique().tolist())
