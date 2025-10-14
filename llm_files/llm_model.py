@@ -386,12 +386,35 @@ Now produce your evaluation - and again **make sure** to end with 'Final Score: 
 """
     return prompt
 
+# def extract_final_diagnosis_score(text):
+#     match = re.search(r"Final Score:\s*(\d{1,3})\s*/\s*100", text)
+#     if match:
+#         return int(match.group(1))
+#     else:
+#         return None
+
+
 def extract_final_diagnosis_score(text):
-    match = re.search(r"Final Score:\s*(\d{1,3})\s*/\s*100", text)
+    match = re.search(r"Final Score[:\s]*\(?(\d{1,3})(?:\s/\s*100)?\)?", text, re.IGNORECASE)
     if match:
         return int(match.group(1))
     else:
         return None
+
+def extract_clinical_accuracy_score(text):
+    match = re.search(r"Clinical Accuracy:?\s*\(?(\d{1,2})\s*/\s*20\)?", text)
+    return int(match.group(1)) if match else None
+
+def extract_use_of_retrieved_evidence_score(text):
+    match = re.search(r"Use of Retrieved Evidence:?\s*\(?(\d{1,2})\s*/\s*10\)?", text)
+    return int(match.group(1)) if match else None
+
+def extract_transparency_explainability_informativeness_score(text):
+    match = re.search(
+        r"Transparency, Explainability\s*&\s*Informativeness:?\s*\(?(\d{1,2})\s*/\s*10\)?", 
+        text
+    )
+    return int(match.group(1)) if match else None
 
 from multiprocessing import Lock
 api_key_lock = Lock()
@@ -448,6 +471,18 @@ def run_generation(query, gnn_terms, retrieved_contexts, retrieved_contexts_no_g
     base_score = extract_final_diagnosis_score(base_eval)
     base_rag_score = extract_final_diagnosis_score(base_eval_rag)
 
+    rag_clinical_accuracy = extract_clinical_accuracy_score(rag_eval)
+    base_clinical_accuracy = extract_clinical_accuracy_score(base_eval)
+    base_rag_clinical_accuracy = extract_clinical_accuracy_score(base_eval_rag)
+
+    rag_use_of_retrieved_evidence = extract_use_of_retrieved_evidence_score(rag_eval)
+    base_use_of_retrieved_evidence = extract_use_of_retrieved_evidence_score(base_eval)
+    base_rag_use_of_retrieved_evidence = extract_use_of_retrieved_evidence_score(base_eval_rag)
+
+    rag_transparency = extract_transparency_explainability_informativeness_score(rag_eval)
+    base_transparency = extract_transparency_explainability_informativeness_score(base_eval)
+    base_rag_transparency = extract_transparency_explainability_informativeness_score(base_eval_rag)
+
     diff = (rag_score or 0) - (base_score or 0)
 
     # RAG_GNN_scores.append(rag_score)
@@ -469,5 +504,22 @@ def run_generation(query, gnn_terms, retrieved_contexts, retrieved_contexts_no_g
         "baseline_output": baseline_output,
         "rag_eval": rag_eval,
         "baseline_eval": base_eval,
-        "stats": stats
+        "rag_gnn_results" : {
+            "score": rag_score,
+            "clinical_accuracy": rag_clinical_accuracy,
+            "use_of_retrieved_evidence": rag_use_of_retrieved_evidence,
+            "transparency": rag_transparency
+        },
+        "baseline_results": {
+            "score": base_score,
+            "clinical_accuracy": base_clinical_accuracy,
+            "use_of_retrieved_evidence": base_use_of_retrieved_evidence,
+            "transparency": base_transparency
+        },
+        "baseline_rag_results": {
+            "score": base_rag_score,
+            "clinical_accuracy": base_rag_clinical_accuracy,
+            "use_of_retrieved_evidence": base_rag_use_of_retrieved_evidence,
+            "transparency": base_rag_transparency
+        }
     }
