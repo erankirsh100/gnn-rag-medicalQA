@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinkedIn About</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f3f2ef;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .result-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 500px;
+        }
+        h1 {
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Myriad Pro', Arial, sans-serif;
+            font-weight: 750;
+            font-size: 38px;
+            color: #0A66C1; /* LinkedIn blue color */
+        }
+        h1 img {
+            width: 150px;
+            height: auto;
+            margin-right: 10px;
+        }
+        p {
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="result-container">
+        <h1>
+            <img
+                src="https://upload.wikimedia.org/wikipedia/commons/1/19/LinkedIn_logo.svg"
+                alt="LinkedIn Logo">
+            About Generator
+        </h1>
+        <p>{{ linkedin_about }}</p>
+    </div>
+</body>
+</html>
