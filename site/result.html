@@ -3,37 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LinkedIn About</title>
+    <title>MedAI QA</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f3f2ef;
+            background-color: #009AB2;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
+            justify-content: center;
             height: 100vh;
             margin: 0;
         }
+
         .result-container {
             background-color: white;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            width: 500px;
+            width: 600px;
+            height: 400px;              /* fixed height */
+            overflow-y: auto;           /* scroll within the box */
+            margin-bottom: 20px;        /* space for the button below */
         }
+
         h1 {
             text-align: center;
-            color: #0077B5; /* LinkedIn blue color */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Myriad Pro', Arial, sans-serif;
+            font-weight: 750;
+            font-size: 38px;
+            color: #0A66C1; /* LinkedIn blue color */
         }
+
+        h1 img {
+            width: 150px;
+            height: auto;
+            margin-right: 10px;
+        }
+
         p {
             color: #333;
+            white-space: pre-line; /* keep line breaks */
+        }
+
+        .back-button {
+            display: flex;
+            justify-content: center;
+        }
+
+        button {
+            background-color: #0A66C1;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #004182;
+        }
+        .middle {
+        width: 300px;   
+        height: auto;
         }
     </style>
 </head>
 <body>
+    <div class="back-button" style="margin-bottom: 20px; margin-top: 20px;">
+            <img class="middle" src="{{ url_for('static', filename='pics/logo_result.jpg') }}" alt="Logo Words">
+    </div>
     <div class="result-container">
-        <h1>LinkedIn About</h1>
         <p>{{ linkedin_about }}</p>
+    </div>
+
+    <div class="back-button">
+        <form action="{{ url_for('form') }}">
+            <button type="submit">⬅ Back to Form</button>
+        </form>
     </div>
 </body>
 </html>
