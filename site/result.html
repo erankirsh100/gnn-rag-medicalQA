@@ -35,7 +35,7 @@
             font-family: 'Myriad Pro', Arial, sans-serif;
             font-weight: 750;
             font-size: 38px;
-            color: #0A66C1; /* LinkedIn blue color */
+            color: #0A66C1; 
         }
 
         h1 img {
@@ -78,7 +78,7 @@
             <img class="middle" src="{{ url_for('static', filename='pics/logo_result.jpg') }}" alt="Logo Words">
     </div>
     <div class="result-container">
-        <p>{{ linkedin_about }}</p>
+        <p>{{ answer | safe}}</p>
     </div>
 
     <div class="back-button">
