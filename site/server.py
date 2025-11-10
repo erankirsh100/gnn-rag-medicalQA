@@ -19,7 +19,7 @@ genai.configure(api_key=GOOGLE_API_KEY)
 # Define the Gemini Model
 model = genai.GenerativeModel('gemini-2.5-pro')
 
-def generate_linkedin_about(user_data):
+def generate_answer(user_data):
 
     prompt = f"""
     Hi, I'm a {user_data['age']} {user_data['gender']}, in the last few {user_data['duration']} i have been feeling the following symptoms: {user_data['symptom']}.
@@ -77,10 +77,9 @@ def submit():
     #     flash('{}'.format(prompt))
     #     return redirect(url_for('form'))
 
-    answer = generate_linkedin_about(user_data)
-    # linkedin_about = linkedin_about.split('*')[-1]
-    # linkedin_about = linkedin_about.split(':')[-1]
-    return render_template('result.html', linkedin_about=answer)
+    answer = generate_answer(user_data)
+    return render_template('result.html', answer=markdown.markdown(answer))
 
 if __name__ == '__main__':
+
     app.run(debug=True)
