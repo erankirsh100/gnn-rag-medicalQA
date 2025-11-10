@@ -11,7 +11,7 @@ from vector_db_files.searcher_class import MilvusSearcher
 from gnn_files.gnn import DiseaseSymptomGraphGNN
 import pandas as pd
 from llm_files.llm_model import run_generation
-from time import time
+import time
 import os
 from dotenv import load_dotenv
 
@@ -43,28 +43,66 @@ print("creating graph model instance")
 graph_model.load_state_dict(torch.load("gnn_files/best_model.pt", map_location=torch.device('cpu')))
 collection_name = "pmc_trec_2016"
 
-############# Create searcher instance #############
-print("creating searcher instance")
-searcher = MilvusSearcher(uri=os.getenv("PATH_TO_MILVUS_DB"), collection_name=collection_name)
+############ Create searcher instance #############
+# print("creating searcher instance")
+# searcher = MilvusSearcher(uri=os.getenv("PATH_TO_MILVUS_DB"), collection_name=collection_name)
 
-def run_pipeline(query, reference=None, testing=False):
+searcher = None  # global searcher instance
+
+# _init_searcher()
+
+def _init_searcher():
+    print("[pipeline] _init_searcher called")
+    global searcher
+    if searcher is not None:
+        print("[pipeline] searcher already initialized", searcher)
+        return searcher
+
+    if ':' in os.getenv("PATH_TO_MILVUS_DB", "") and not os.getenv("PATH_TO_MILVUS_DB", "").endswith(".db"):
+        print("[pipeline] detected host:port format for Milvus URI")
+        uri = os.getenv("PATH_TO_MILVUS_DB", "")
+    else:
+        print("[pipeline] detected file path format for Milvus URI")
+        uri = "./" + os.getenv("PATH_TO_MILVUS_DB", "").split('/')[-1]
+    print(f"[pipeline] PATH_TO_MILVUS_DB='{uri}'")
+    try:
+        searcher = MilvusSearcher(uri=uri, collection_name=collection_name)
+        print("[pipeline] MilvusSearcher initialized")
+    except Exception as e:
+        print("[pipeline] Milvus connection failed at init:", repr(e))
+        searcher = None
+    return searcher
+
+def run_pipeline(query, reference=None, testing=False, searcher_instance=None):
+    print("in run_pipeline with query:", query)
+    # ensure searcher available (lazy init)
+    global searcher
+    max_tries = 3
+    while searcher is None and max_tries > 0:
+        _init_searcher()
+        if searcher is not None:
+            break
+        print("[pipeline] Retrying in 5 seconds...")
+        time.sleep(5)
+        max_tries -= 1
+
     # print("Running pipeline for query:", query)
-    # start_time = time()
+    # start_time = time.time()
     graph_results = graph_model.text_forward(query)
-    # print("GNN Time:", time() - start_time)
-    # start_time = time()
+    # print("GNN Time:", time.time() - start_time)
+    # start_time = time.time()
     prompt = f"potential diseases: {' ,'.join(graph_results)} \n query: {query}"
 
     # print("Prompt for search:\n", prompt)
     search_results_with_gnn = searcher.search(prompt, limit=5)
-    # print("Search Time:", time() - start_time)
+    # print("Search Time:", time.time() - start_time)
     search_results_without_gnn = None
     if testing:
         search_results_without_gnn = searcher.search(f"query: {query}")
     # print("Search results:\n", search_results)
-    # start_time = time()
+    # start_time = time.time()
     final_answer = run_generation(query, graph_results, search_results_with_gnn, testing=testing, reference_diagnosis=reference, retrieved_contexts_no_gnn=search_results_without_gnn)
-    # print("LLM Time:", time() - start_time)
+    # print("LLM Time:", time.time() - start_time)
     return final_answer
 
 if __name__ == "__main__":

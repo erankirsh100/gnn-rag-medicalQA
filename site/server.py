@@ -1,11 +1,18 @@
 from flask import Flask, jsonify, request, render_template, redirect, url_for, flash
-from ..pipeline import run_pipeline
+# from pipeline import run_pipeline
 import google.generativeai as genai
 import csv
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Add this line to set the secret key
 
-with open('data/unique_symptoms.csv') as f:
+# import pipeline workaround
+import sys, os
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, PROJECT_ROOT)
+from pipeline import run_pipeline
+
+SYMPTOMS_CSV = os.path.join(PROJECT_ROOT, "site", "data", "unique_symptoms.csv")
+with open(SYMPTOMS_CSV) as f:
     symptoms_list = [row[0] for row in csv.reader(f)]
 
 # Load your Gemini API Key
@@ -30,13 +37,27 @@ def generate_answer(user_data):
     I am a {user_data['smoker']}, and I excercise {user_data['excercise']}.
 
     I would like to know what may be the disease causing these symptoms.
+
+    keep your answer concise and to the point, do not expand on the input information.
     """
 
-    response = run_pipeline(prompt["rag_gnn_output"])
-    return response.text
+    response = run_pipeline(prompt)["rag_gnn_output"]
+    # init_searcher() should run at opening, so pipeline can run fast on first call
+    return response
 
 @app.route('/')
 def form():
+    # innitialize the searcher to avoid delay on first request
+    dummy_user_data = dict()
+    dummy_user_data['age']="25"
+    dummy_user_data['gender'] = "male"
+    dummy_user_data['symptom'] = "headache"
+    dummy_user_data['description'] = "a persistent headache"
+    dummy_user_data['duration'] = "2 days"
+    dummy_user_data['severity'] = "4"
+    dummy_user_data['smoker'] = "no"
+    dummy_user_data['excercise'] = "regularly"
+    generate_answer(dummy_user_data)  # init_searcher() workaround
     return render_template('Form.html')
 
 @app.route('/autocomplete')
@@ -78,8 +99,10 @@ def submit():
     #     return redirect(url_for('form'))
 
     answer = generate_answer(user_data)
-    return render_template('result.html', answer=markdown.markdown(answer))
+    # linkedin_about = linkedin_about.split('*')[-1]
+    # linkedin_about = linkedin_about.split(':')[-1]
+    return render_template('result.html', answer=answer)
+
 
 if __name__ == '__main__':
-
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
