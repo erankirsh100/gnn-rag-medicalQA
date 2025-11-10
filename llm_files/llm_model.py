@@ -55,6 +55,33 @@ class APIKeyManager:
         new_manager.current_key = self.current_key
         new_manager._cycle = self._cycle
         return new_manager
+    
+class APIExecutor:
+    """
+    Round-robin API key manager with failover retry.
+    """
+    def __init__(self, key):
+        if not key:
+            raise ValueError("Provide one API key.")
+        self.key = key
+        os.environ["API_KEY"] = self.key
+        genai.configure(api_key=self.key)
+
+    def try_with_retry(self, func, *args, **kwargs):
+        """
+        Call func with failover retry on exception.
+        """
+        while True:
+            try:
+                return func(*args, **kwargs)
+            except Exception as e:
+                print(f"[APIKeyManager] Key {self.key} failed → retrying: {e}")
+                time.sleep(1)
+
+    def __copy__(self):
+        new_manager = APIExecutor(self.key)
+        return new_manager
+
 
 global api_manager
 api_manager = APIKeyManager(api_keys)
@@ -231,11 +258,17 @@ def safe_generate(model, prompt, generation_config=None, api_manager=None):
     if api_manager:
         return api_manager.try_with_retry(model.generate_content, prompt, generation_config=generation_config).text
     else:
+        count = 0
+        if count == len(api_keys):
+            count = 0
+            time.sleep(60)
         while True:
             try:
                 return model.generate_content(prompt, generation_config=generation_config).text
             except Exception:
                 time.sleep(2)
+                count += 1
+            
 
 def rag_gnn_evaluation_prompt(system_output, reference_diagnoses, symptom_description):
     prompt = f"""### Mission:
@@ -416,8 +449,6 @@ def extract_transparency_explainability_informativeness_score(text):
     )
     return int(match.group(1)) if match else None
 
-from multiprocessing import Lock
-api_key_lock = Lock()
 
 def run_generation(query, gnn_terms, retrieved_contexts, retrieved_contexts_no_gnn=None, reference_diagnosis=None, testing=True, temperature=0.2):
     """
@@ -425,12 +456,14 @@ def run_generation(query, gnn_terms, retrieved_contexts, retrieved_contexts_no_g
     - testing=False: just generate RAG-GNN content
     - testing=True: generate + baseline + evaluation + score comparison
     """
-    api_key_lock.acquire()
-    try:
-        api_manager.configure_next()
-        cur_api_manager = api_manager.__copy__()
-    finally:
-        api_key_lock.release()
+
+    # api_key_lock.acquire()
+    # try:
+    #     api_manager.configure_next()
+    #     cur_api_manager = api_manager.__copy__()
+    # finally:
+    #     api_key_lock.release()
+    api_manager.configure_next()
 
     model = genai.GenerativeModel(
         "gemini-2.5-flash-lite",
@@ -455,17 +488,113 @@ def run_generation(query, gnn_terms, retrieved_contexts, retrieved_contexts_no_g
         raise ValueError("reference_diagnosis is required in testing mode.")
 
     # Baseline generation
-    baseline_output = safe_generate(model, query, api_manager=cur_api_manager)
-    baseline_rag_output = safe_generate(model, rag_gnn_generation_prompt(query, retrieved_contexts_no_gnn, ""), api_manager=cur_api_manager)
+    baseline_output = safe_generate(model, query, api_manager=api_manager)
+    baseline_rag_output = safe_generate(model, rag_gnn_generation_prompt(query, retrieved_contexts_no_gnn, ""), api_manager=api_manager)
 
     # Evaluation prompts
     rag_eval_prompt = rag_gnn_evaluation_prompt(rag_gnn_output, reference_diagnosis, query)
     base_eval_prompt = rag_gnn_evaluation_prompt(baseline_output, reference_diagnosis, query)
     base_eval_rag_prompt = rag_gnn_evaluation_prompt(baseline_rag_output, reference_diagnosis, query)
 
-    rag_eval = safe_generate(model, rag_eval_prompt, api_manager=cur_api_manager)
-    base_eval = safe_generate(model, base_eval_prompt, api_manager=cur_api_manager)
-    base_eval_rag = safe_generate(model, base_eval_rag_prompt, api_manager=cur_api_manager)
+    rag_eval = safe_generate(model, rag_eval_prompt, api_manager=api_manager)
+    base_eval = safe_generate(model, base_eval_prompt, api_manager=api_manager)
+    base_eval_rag = safe_generate(model, base_eval_rag_prompt, api_manager=api_manager)
+
+    rag_score = extract_final_diagnosis_score(rag_eval)
+    base_score = extract_final_diagnosis_score(base_eval)
+    base_rag_score = extract_final_diagnosis_score(base_eval_rag)
+
+    rag_clinical_accuracy = extract_clinical_accuracy_score(rag_eval)
+    base_clinical_accuracy = extract_clinical_accuracy_score(base_eval)
+    base_rag_clinical_accuracy = extract_clinical_accuracy_score(base_eval_rag)
+
+    rag_use_of_retrieved_evidence = extract_use_of_retrieved_evidence_score(rag_eval)
+    base_use_of_retrieved_evidence = extract_use_of_retrieved_evidence_score(base_eval)
+    base_rag_use_of_retrieved_evidence = extract_use_of_retrieved_evidence_score(base_eval_rag)
+
+    rag_transparency = extract_transparency_explainability_informativeness_score(rag_eval)
+    base_transparency = extract_transparency_explainability_informativeness_score(base_eval)
+    base_rag_transparency = extract_transparency_explainability_informativeness_score(base_eval_rag)
+
+    diff = (rag_score or 0) - (base_score or 0)
+
+    # RAG_GNN_scores.append(rag_score)
+    # Vanilla_LLM_scores.append(base_score)
+
+    stats = {
+        "rag_gnn_score": rag_score,
+        "baseline_score": base_score,
+        # "difference": diff,
+        "rag_score": base_rag_score,
+    }
+
+    return {
+        "query": query,
+        "reference_diagnosis": reference_diagnosis,
+        "gnn_terms": gnn_terms,
+        "retrieved_contexts": retrieved_contexts,
+        "rag_gnn_output": rag_gnn_output,
+        "baseline_output": baseline_output,
+        "rag_eval": rag_eval,
+        "baseline_eval": base_eval,
+        "rag_gnn_results" : {
+            "score": rag_score,
+            "clinical_accuracy": rag_clinical_accuracy,
+            "use_of_retrieved_evidence": rag_use_of_retrieved_evidence,
+            "transparency": rag_transparency
+        },
+        "baseline_results": {
+            "score": base_score,
+            "clinical_accuracy": base_clinical_accuracy,
+            "use_of_retrieved_evidence": base_use_of_retrieved_evidence,
+            "transparency": base_transparency
+        },
+        "baseline_rag_results": {
+            "score": base_rag_score,
+            "clinical_accuracy": base_rag_clinical_accuracy,
+            "use_of_retrieved_evidence": base_rag_use_of_retrieved_evidence,
+            "transparency": base_rag_transparency
+        }
+    }
+
+
+def run_generation_mp(query, gnn_terms, retrieved_contexts, retrieved_contexts_no_gnn=None, reference_diagnosis=None, testing=True, temperature=0.2, api_ex_index = 0):
+
+    api_executor = APIExecutor(api_keys[api_ex_index])
+    model = genai.GenerativeModel(
+        "gemini-2.5-flash-lite",
+        generation_config={"temperature": temperature}
+    )
+
+    # Step 2: RAG-GNN generation
+    gen_prompt = rag_gnn_generation_prompt(query, retrieved_contexts, gnn_terms)
+    rag_gnn_output = safe_generate(model, gen_prompt, api_manager=api_executor)
+
+    # If just generating content
+    if not testing:
+        return {
+            "query": query,
+            "gnn_terms": gnn_terms,
+            "retrieved_contexts": retrieved_contexts,
+            "rag_gnn_output": rag_gnn_output
+        }
+
+    # Testing mode requires reference diagnosis
+    if reference_diagnosis is None:
+        raise ValueError("reference_diagnosis is required in testing mode.")
+
+    # Baseline generation
+    baseline_output = safe_generate(model, query, api_manager=api_executor)
+    baseline_rag_output = safe_generate(model, rag_gnn_generation_prompt(query, retrieved_contexts_no_gnn, ""), api_manager=api_executor)
+
+    # Evaluation prompts
+    rag_eval_prompt = rag_gnn_evaluation_prompt(rag_gnn_output, reference_diagnosis, query)
+    base_eval_prompt = rag_gnn_evaluation_prompt(baseline_output, reference_diagnosis, query)
+    base_eval_rag_prompt = rag_gnn_evaluation_prompt(baseline_rag_output, reference_diagnosis, query)
+
+    rag_eval = safe_generate(model, rag_eval_prompt, api_manager=api_executor)
+    base_eval = safe_generate(model, base_eval_prompt, api_manager=api_executor)
+    base_eval_rag = safe_generate(model, base_eval_rag_prompt, api_manager=api_executor)
 
     rag_score = extract_final_diagnosis_score(rag_eval)
     base_score = extract_final_diagnosis_score(base_eval)
