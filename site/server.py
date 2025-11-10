@@ -1,4 +1,5 @@
 from flask import Flask, jsonify, request, render_template, redirect, url_for, flash
+from ..pipeline import run_pipeline
 import google.generativeai as genai
 import csv
 app = Flask(__name__)
@@ -30,8 +31,8 @@ def generate_linkedin_about(user_data):
 
     I would like to know what may be the disease causing these symptoms.
     """
-    print(prompt)
-    response = model.generate_content(prompt)
+
+    response = run_pipeline(prompt["rag_gnn_output"])
     return response.text
 
 @app.route('/')
