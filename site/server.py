@@ -4,7 +4,7 @@ import google.generativeai as genai
 import csv
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Add this line to set the secret key
-
+import threading
 # import pipeline workaround
 import sys, os
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -25,6 +25,8 @@ genai.configure(api_key=GOOGLE_API_KEY)
 
 # Define the Gemini Model
 model = genai.GenerativeModel('gemini-2.5-pro')
+first_load_flag = True
+jobdone = None
 
 def generate_answer(user_data):
 
@@ -40,25 +42,79 @@ def generate_answer(user_data):
 
     keep your answer concise and to the point, do not expand on the input information.
     """
+    global jobdone
 
+    jobdone = False
     response = run_pipeline(prompt)["rag_gnn_output"]
+    jobdone = True
     # init_searcher() should run at opening, so pipeline can run fast on first call
     return response
 
 @app.route('/')
-def form():
+def index():
+    global first_load_flag
+    print("first_load_flag:", first_load_flag)
+    if first_load_flag:
+        print("First load - initializing searcher")
+        dummy_user_data = dict()
+        dummy_user_data['age']="25"
+        dummy_user_data['gender'] = "male"
+        dummy_user_data['symptom'] = "headache"
+        dummy_user_data['description'] = "a persistent headache"
+        dummy_user_data['duration'] = "2 days"
+        dummy_user_data['severity'] = "4"
+        dummy_user_data['smoker'] = "no"
+        dummy_user_data['excercise'] = "regularly"
+        # generate_answer(dummy_user_data)  # init_searcher() workaround
+        first_load_flag = False
+    threading.Thread(target=generate_answer, args=(dummy_user_data,)).start()
+    return render_template('landingPage.html')
+
+@app.route('/process')
+def process():
     # innitialize the searcher to avoid delay on first request
-    dummy_user_data = dict()
-    dummy_user_data['age']="25"
-    dummy_user_data['gender'] = "male"
-    dummy_user_data['symptom'] = "headache"
-    dummy_user_data['description'] = "a persistent headache"
-    dummy_user_data['duration'] = "2 days"
-    dummy_user_data['severity'] = "4"
-    dummy_user_data['smoker'] = "no"
-    dummy_user_data['excercise'] = "regularly"
-    generate_answer(dummy_user_data)  # init_searcher() workaround
+    return {'done': jobdone}
+
+@app.route('/form')
+def form():
     return render_template('Form.html')
+
+# @app.route('/')
+# def form():
+#     # If first load, show a lightweight loading page that will trigger server init.
+#     # The /init endpoint performs the heavy initialization (once) and then redirects
+#     # the browser back to '/' to render the real form.
+#     global first_load_flag
+#     if first_load_flag:
+#         return render_template('landingPage.html')
+
+#     return render_template('Form.html')
+
+# @app.route('/init', methods=['GET'])
+# def init_app():
+#     """Endpoint called from loading.html to run heavy initialization once."""
+#     global first_load_flag
+#     if not first_load_flag:
+#         return jsonify({"status": "ready"})
+
+#     try:
+#         # same dummy payload used previously to warm up pipeline/searcher
+#         dummy_user_data = {
+#             'age': "25",
+#             'gender': "male",
+#             'symptom': "headache",
+#             'description': "a persistent headache",
+#             'duration': "2 days",
+#             'severity': "4",
+#             'smoker': "no",
+#             'excercise': "regularly"
+#         }
+#         # run heavy init (blocking) once
+#         generate_answer(dummy_user_data)
+#         first_load_flag = False
+#         return jsonify({"status": "ready"})
+#     except Exception as e:
+#         return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route('/autocomplete')
 def autocomplete():
@@ -105,4 +161,4 @@ def submit():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True, use_reloader=False)
