@@ -52,7 +52,7 @@ docker run -d --name med_qa -p 5000:5000 med_qa_app
 3) Acquire the full vector database (not mandatory if using Linux)
 - Read vector_db_files/README.md and follow the instructions for your OS to either:
   - Download and use the ready-to-use vector DB (recommended).
-  - Build the Milvus vector DB from scratch (not recommended).
+  - Build the Milvus vector DB from scratch (not recommended and supports Linux only).
 - Ensure your .env has a proper PATH_TO_MILVUS_DB value as described there.
 
 4) Runing the pipeline:
