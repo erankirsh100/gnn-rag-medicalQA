@@ -1,14 +1,44 @@
-# Vector Database: Creation and Usage
-
-! Read the main README in the project root first. !
-
-Important
-- This part is optional. You can skip creation and use a ready-to-use vector DB. See “Get a ready-to-use vector DB”.
-
+# Vector Database: Usage and Creation Guide
 Supported platforms: Windows and Linux.
 
-## Overview
+We present to you 2 options:<br>
+* The easy way😇: download and use our ready-to-use Milvus vector DB! (recommended)
+* The hard way😈: build the Milvus vector DB from scratch! (not recommended unless you have sufficient memory, compute power, and time)
 
+
+# Download and Use
+
+### Linux
+- Download the premade `milvus_pmc.db`: [Download Link](https://technionmail-my.sharepoint.com/:u:/g/personal/sasson_noam_campus_technion_ac_il/EbDphKAmJWBDm8CP2BIclYYB7jX6p2JsKeyN_7Jt6hNvQQ?e=iwIbIm)
+- Place it in the project root (or your chosen folder).
+- Set `.env`:
+```
+PATH_TO_MILVUS_DB=./milvus_pmc.db
+```
+
+### Windows
+- Download the prepared data from ADD_LINK_HERE to destination setup\vector_db_setup\windows.
+- run the following in your docker-enabled terminal:
+  ```powershell
+  mkdir milvus && cd milvus
+  Invoke-WebRequest -Uri https://raw.githubusercontent.com/milvus-io/milvus/v2.4.6/deployments/docker/compose/standalone/docker-compose.yml -OutFile docker-compose.yml
+  docker compose up -d
+  docker ps  # verify milvus-standalone is running
+  ```
+- Ensure Docker/Milvus is running and `.env` has `PATH_TO_MILVUS_DB=http://127.0.0.1:19530`.
+- Open and run the following notebook: setup/vector_db_setup/windows/<b>upload_data_to_docker.ipynb</b> with the provided conda kernel (check ReadMe in root if you haven't set it up yet).
+
+## Notes and tips
+
+- .env formatting: use simple KEY=VALUE, for example:
+  ```
+  PATH_TO_MILVUS_DB=http://127.0.0.1:19530
+  ```
+  No quotes are required.
+- On Windows, run shell scripts with Git Bash or WSL.
+<br><br>
+# Build the Milvus Vector DB
+## Overview
 This guide covers:
 - Preparing the TREC Clinical (2016) PMC data
 - Converting NXML to compact JSON
@@ -32,16 +62,12 @@ Result: a Milvus vector DB usable by the pipeline.
    - Place the downloaded .tar.gz files in a folder you choose.
    - Run the extractor from that folder:
 
-   Linux/macOS:
+   Linux/macOS + Windows:
    ```bash
    bash path/to/your/repo/vector_db_files/extract_data_from_zip.sh
    ```
 
-   Windows:
-   - Use Git Bash or WSL to run the script:
-   ```bash
-   bash path/to/your/repo/vector_db_files/extract_data_from_zip.sh
-   ```
+
    - Alternatively, extract manually ensuring you end up with:
      - raw_data/pmc-00, raw_data/pmc-01, raw_data/pmc-02, raw_data/pmc-03
      - res_data/ (empty to start)
@@ -55,6 +81,7 @@ Note about paths:
 - Replace these with your local paths. Example (Windows): `C:\Users\Lenovo\Documents\...\raw_data` and `...\res_data`.
 
 ### Windows (Docker Milvus)
+unfo
 
 1) Install Docker Desktop for Windows
 - Download and install: https://www.docker.com/products/docker-desktop/
@@ -104,28 +131,3 @@ import os
 client = MilvusClient(uri=os.getenv("PATH_TO_MILVUS_DB"))
 print(client.list_collections())
 ```
-
-## Get a ready-to-use vector DB (skip creation)
-
-### Windows
-- Download the prepared data: ADD_LINK_HERE
-- Open and run: `setup/vector_db_setup/windows/upload_data_to_docker.ipynb`
-- Ensure Docker/Milvus is running and `.env` has `PATH_TO_MILVUS_DB=http://127.0.0.1:19530`.
-
-### Linux
-- Download the premade `milvus_pmc.db`: ADD_LINK_HERE
-- Place it in the project root (or your chosen folder).
-- Set `.env`:
-```
-PATH_TO_MILVUS_DB=./milvus_pmc.db
-```
-
-## Notes and tips
-
-- .env formatting: use simple KEY=VALUE, for example:
-  ```
-  PATH_TO_MILVUS_DB=http://127.0.0.1:19530
-  ```
-  No quotes are required.
-- On Windows, run shell scripts with Git Bash or WSL.
-- If you see hardcoded Linux paths in the notebook (e.g., `/home/student/project/...`), replace them with your actual local paths before running.
