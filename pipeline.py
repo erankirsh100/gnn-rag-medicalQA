@@ -86,6 +86,8 @@ def run_pipeline(query, reference=None, testing=False, searcher_instance=None):
         time.sleep(5)
         max_tries -= 1
 
+    ## --- all commented code bellow is for debugging purposes ---
+
     # print("Running pipeline for query:", query)
     # start_time = time.time()
     graph_results = graph_model.text_forward(query)

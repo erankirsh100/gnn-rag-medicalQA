@@ -127,43 +127,6 @@ class DiseaseKnowledgeGraph:
                     disease_in_list = data_doctor["semantic_matches_disease"][0:1]
                     disease = [disease_in_list[0][0]]
                 self.graphs.append(self.update_graph_data(data_patient, disease))
-            
-        # # === Build patient-doctor graphs ===
-        # for disease in tqdm(self.disease_list, desc="Building disease-symptom graphs"):
-        #     # Get all rows for this disease
-        #     disease_rows = self.disease_symptom_csv[self.disease_symptom_csv["diseases"] == disease]
-
-        #     # Sample up to 20 random examples (if fewer than 20, take all)
-        #     sampled_rows = disease_rows.sample(n=min(4, len(disease_rows)), random_state=42)
-
-        #     for _, row_data in sampled_rows.iterrows():
-        #         symptoms = [
-        #             self.symptom_list[i]
-        #             for i, val in enumerate(row_data[1:].tolist())  # assuming first col is "diseases"
-        #             if val == 1
-        #         ]
-
-        #         data = self.encode_text_and_match_diseases("person")
-        #         data["exact_matches_symptom"].extend(symptoms)
-        #         self.graphs.append(self.update_graph_data(data, disease))
-
-
-        # for _, row_data in tqdm(
-        #     self.patient_doctor_csv.sample(n=1500, random_state=42).iterrows(),
-        #     total=1500,
-        #     desc="Building patient-doctor graphs"
-        # ):
-        #     text_patient = row_data["problem_description"]
-        #     data_patient = self.encode_text_and_match_diseases(text_patient)
-
-        #     text_doctor = row_data["Doctor"]
-        #     data_doctor = self.encode_text_and_match_diseases(text_doctor)
-
-        #     disease = data_doctor["exact_matches_disease"]
-        #     if len(disease) == 0:
-        #         disease_in_list = data_doctor["semantic_matches_disease"][0:1]
-        #         disease = [disease_in_list[0][0]]
-        #     self.graphs.append(self.update_graph_data(data_patient, disease))
 
     def load_disease_aliases(self, disease_aliases_path):
         if disease_aliases_path is not None:

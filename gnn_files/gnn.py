@@ -92,10 +92,7 @@ class DiseaseSymptomGraphGNN(nn.Module):
             self.alias2disease = {}
 
         self.disease2id = {d: i for i, d in enumerate(self.disease_list)}
-
         self.main_graph_df = pd.read_csv(dict_paths["main_graph_path"])
-        # self.disease_symptom_csv = pd.read_csv(dict_paths["disease_symptom_csv_path"])
-        # self.patient_doctor_csv = pd.read_csv(dict_paths["patient_doctor_csv_path"])
 
         # Load disease list & mapping
         self.disease_list = sorted(self.main_graph_df["diseases"].dropna().unique().tolist())
