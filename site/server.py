@@ -67,7 +67,7 @@ def index():
         dummy_user_data['excercise'] = "regularly"
         # generate_answer(dummy_user_data)  # init_searcher() workaround
         first_load_flag = False
-    threading.Thread(target=generate_answer, args=(dummy_user_data,)).start()
+        threading.Thread(target=generate_answer, args=(dummy_user_data,)).start()
     return render_template('landingPage.html')
 
 @app.route('/process')

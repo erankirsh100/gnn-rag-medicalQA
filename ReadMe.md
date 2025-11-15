@@ -9,8 +9,14 @@ Platforms
 - Make sure to have <b>Docker installed</b> for the <b>easy run option</b>.
 - Make sure to have <b>Conda</b> installed for the <b>raw project run option</b>. You may need to install Docker either way if you want to run on windows.
 
-note: This repo uses a sample of ~15k medical papers from PubMed Central, our full dataset contains ~1.2M papers.
-want the full experiance? replace milvus_pmc.db with the one located in [here](https://technionmail-my.sharepoint.com/:f:/g/personal/sasson_noam_campus_technion_ac_il/EnIMQ7Zc3E9OizbXFroOKwgBSqOaUzHcredlW4swTZNcaQ?e=ZssrXv)
+<div style="border:1px solid #e1e4e8; padding:12px 16px; border-radius:6px;">
+  <strong>📝 Note</strong>
+  <ul style="margin:8px 0 0 18px; padding:0;">
+    <li>This repo uses a sample of ~15k medical papers from PubMed Central; our full dataset contains ~1.2M papers.</li>
+    <li>Want the full experience? Replace <code>milvus_pmc.db</code> with the full DB available <a href="https://technionmail-my.sharepoint.com/:f:/g/personal/sasson_noam_campus_technion_ac_il/EnIMQ7Zc3E9OizbXFroOKwgBSqOaUzHcredlW4swTZNcaQ?e=ZssrXv" target="_blank" rel="noopener noreferrer">here</a>.</li>
+  </ul>
+</div>
+
 
 
 <!-- Note
@@ -27,7 +33,18 @@ want the full experiance? replace milvus_pmc.db with the one located in [here](h
 docker build -t med_qa_app .
 docker run -d --name med_qa -p 5000:5000 med_qa_app
 ```
+
 4) Access the application at http://localhost:5000 in your web browser :)
+
+
+<div style="border:1px solid #ffffffff; padding:12px 16px; border-radius:6px;">
+<strong>📝 Note</strong>
+<ul style="margin:8px 0 0 18px; padding:0;">
+  <li>Build takes ~22 minutes on a standard machine.</li>
+  <li>After running the <code>docker run</code> command, the server may take a minute or two to start responding so please be patient.</li>
+</ul>
+</div>
+
 
 ### The Raw Project Run <img src="utiles/conda_icon.png" alt="Docker logo" width="35" style="vertical-align: middle;" />
 1) Do steps 1,2 from the easy way.
