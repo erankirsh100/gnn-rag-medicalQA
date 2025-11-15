@@ -10,7 +10,7 @@ Platforms
 - Make sure to have <b>Conda</b> installed for the <b>raw project run option</b>. You may need to install Docker either way if you want to run on windows.
 
 note: This repo uses a sample of ~15k medical papers from PubMed Central, our full dataset contains ~1.2M papers.
-want the full experiance? replace milvus_pmc.db with the one located in here: https://technionmail-my.sharepoint.com/:f:/g/personal/sasson_noam_campus_technion_ac_il/EnIMQ7Zc3E9OizbXFroOKwgBSqOaUzHcredlW4swTZNcaQ?e=ZssrXv
+want the full experiance? replace milvus_pmc.db with the one located in [here](https://technionmail-my.sharepoint.com/:f:/g/personal/sasson_noam_campus_technion_ac_il/EnIMQ7Zc3E9OizbXFroOKwgBSqOaUzHcredlW4swTZNcaQ?e=ZssrXv)
 
 
 <!-- Note

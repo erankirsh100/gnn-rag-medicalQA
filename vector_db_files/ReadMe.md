@@ -17,7 +17,7 @@ PATH_TO_MILVUS_DB=./milvus_pmc.db
 ```
 
 ### Windows
-- Download the prepared data from ADD_LINK_HERE to destination setup\vector_db_setup\windows.
+- Download the prepared data from [here](https://technionmail-my.sharepoint.com/:u:/g/personal/sasson_noam_campus_technion_ac_il/EbDphKAmJWBDm8CP2BIclYYB7jX6p2JsKeyN_7Jt6hNvQQ?e=qd2dwN) to destination setup\vector_db_setup\windows.
 - run the following in your docker-enabled terminal:
   ```powershell
   mkdir milvus && cd milvus
