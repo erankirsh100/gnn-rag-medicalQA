@@ -29,7 +29,6 @@ PATH_TO_MILVUS_DB=./milvus_pmc.db
 - Open and run the following notebook: setup/vector_db_setup/windows/<b>upload_data_to_docker.ipynb</b> with the provided conda kernel (check ReadMe in root if you haven't set it up yet).
 
 ## Notes and tips
-
 - .env formatting: use simple KEY=VALUE, for example:
   ```
   PATH_TO_MILVUS_DB=http://127.0.0.1:19530
