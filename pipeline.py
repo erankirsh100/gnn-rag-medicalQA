@@ -43,13 +43,8 @@ print("creating graph model instance")
 graph_model.load_state_dict(torch.load("gnn_files/best_model.pt", map_location=torch.device('cpu')))
 collection_name = "pmc_trec_2016"
 
-############ Create searcher instance #############
-# print("creating searcher instance")
-# searcher = MilvusSearcher(uri=os.getenv("PATH_TO_MILVUS_DB"), collection_name=collection_name)
-
 searcher = None  # global searcher instance
 
-# _init_searcher()
 
 def _init_searcher():
     print("[pipeline] _init_searcher called")
@@ -86,25 +81,21 @@ def run_pipeline(query, reference=None, testing=False, searcher_instance=None):
         time.sleep(5)
         max_tries -= 1
 
-    ## --- all commented code bellow is for debugging purposes ---
-
-    # print("Running pipeline for query:", query)
-    # start_time = time.time()
+    #  get potential diseases from GNN
     graph_results = graph_model.text_forward(query)
-    # print("GNN Time:", time.time() - start_time)
-    # start_time = time.time()
+
+    # enrich query with potential diseases for RAG search
     prompt = f"potential diseases: {' ,'.join(graph_results)} \n query: {query}"
 
-    # print("Prompt for search:\n", prompt)
+    # preform RAG search
     search_results_with_gnn = searcher.search(prompt, limit=5)
-    # print("Search Time:", time.time() - start_time)
     search_results_without_gnn = None
     if testing:
         search_results_without_gnn = searcher.search(f"query: {query}")
-    # print("Search results:\n", search_results)
-    # start_time = time.time()
+    
+    # generate final answer
     final_answer = run_generation(query, graph_results, search_results_with_gnn, testing=testing, reference_diagnosis=reference, retrieved_contexts_no_gnn=search_results_without_gnn)
-    # print("LLM Time:", time.time() - start_time)
+    
     return final_answer
 
 if __name__ == "__main__":

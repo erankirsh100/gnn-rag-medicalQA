@@ -1,13 +1,22 @@
 # Vector Database: Usage and Creation Guide
+
+- [Overview / This page](#vector-database-usage-and-creation-guide)
+- [Download and Use Full Vector DB](#download-and-use)
+  - [Linux instructions](#download-and-use---linux)
+  - [Windows instructions](#download-and-use---windows)
+- [Build the Milvus Vector DB from scratch](#build-the-milvus-vector-db)
+
+
 Supported platforms: Windows and Linux.
 
 We present to you 2 options:<br>
 * The easy way😇: download and use our ready-to-use Milvus vector DB! (recommended)
 * The hard way😈: build the Milvus vector DB from scratch! (not recommended unless you have sufficient memory, compute power, and time)
 
+<a id="download-and-use"></a>
+# Download and Use ⏬
 
-# Download and Use
-
+<a id="download-and-use---linux"></a>
 ### Linux
 - Download the premade `milvus_pmc.db`: [Download Link](https://technionmail-my.sharepoint.com/:u:/g/personal/sasson_noam_campus_technion_ac_il/EbDphKAmJWBDm8CP2BIclYYB7jX6p2JsKeyN_7Jt6hNvQQ?e=iwIbIm)
 - Place it in the project root (or your chosen folder).
@@ -16,6 +25,7 @@ We present to you 2 options:<br>
 PATH_TO_MILVUS_DB=./milvus_pmc.db
 ```
 
+<a id="download-and-use---windows"></a>
 ### Windows
 - Download the prepared data from [here](https://technionmail-my.sharepoint.com/:u:/g/personal/sasson_noam_campus_technion_ac_il/EbDphKAmJWBDm8CP2BIclYYB7jX6p2JsKeyN_7Jt6hNvQQ?e=qd2dwN) to destination setup\vector_db_setup\windows.
 - run the following in your docker-enabled terminal:
@@ -36,7 +46,9 @@ PATH_TO_MILVUS_DB=./milvus_pmc.db
   No quotes are required.
 - On Windows, run shell scripts with Git Bash or WSL.
 <br><br>
-# Build the Milvus Vector DB
+
+<a id="build-the-milvus-vector-db"></a>
+# Build the Milvus Vector DB 🛠
 ## Overview
 This guide covers:
 - Preparing the TREC Clinical (2016) PMC data
