@@ -17,14 +17,14 @@ The purpose of this project is to identify potential diseases from a user compla
 Platforms
 - Supports Linux and Windows operating systems.
 - Make sure to have <b>Docker installed</b> for the <b>easy run option</b>.
-- Make sure to have <b>Conda</b> installed for the <b>raw project run option</b>. You may need to install Docker either way if you want to run on windows.
+- Make sure to have <b>Conda</b> installed for the <b>raw project run option</b>. You may need to install Docker either way if you want to run on Windows.
 
 <div style="border:1px solid #e1e4e8; padding:12px 16px; border-radius:6px;">
-  <strong>📝 Note</strong>
-  <ul style="margin:8px 0 0 18px; padding:0;">
-    <li>This repo uses a sample of ~15k medical papers from PubMed Central; our full dataset contains ~1.2M papers.</li>
-    <li>Want the full experience? Replace <code>milvus_pmc.db</code> with the full DB available <a href="https://technionmail-my.sharepoint.com/:f:/g/personal/sasson_noam_campus_technion_ac_il/EnIMQ7Zc3E9OizbXFroOKwgBSqOaUzHcredlW4swTZNcaQ?e=ZssrXv" target="_blank" rel="noopener noreferrer">here</a>.</li>
-  </ul>
+  <strong>📝 Note</strong>
+  <ul style="margin:8px 0 0 18px; padding:0;">
+    <li>This repo uses a sample of ~15k medical papers from PubMed Central; our full dataset contains ~1.2M papers.</li>
+    <li>Want the full experience? Replace <code>milvus_pmc.db</code> with the full DB available <a href="https://technionmail-my.sharepoint.com/:f:/g/personal/sasson_noam_campus_technion_ac_il/EnIMQ7Zc3E9OizbXFroOKwgBSqOaUzHcredlW4swTZNcaQ?e=ZssrXv" target="_blank" rel="noopener noreferrer">here</a>.</li>
+  </ul>
 </div>
 
 
@@ -34,12 +34,13 @@ Platforms
 
 <a name="quick-start-raw-project-run"></a>
 ## Quick start (raw project run)
+<a name="the-easy-way-to-run-the-project"></a>
 ### The Easy Way to Run the Project <img src="utiles/docker_icon.png" alt="Docker logo" width="35" style="vertical-align: middle;" />
 
 
-1) Clone this gitHub repository
-2) Change .env.example to .env and set your API keys (you need to set at least one, get one from the Gemini API: https://ai.google.dev/gemini-api/docs/api-key)
-3) Run the following commands in your docker-enabled terminal:
+1) Clone this GitHub repository
+2) Change .env.example to .env and set your API keys (you need to set at least one, get one from the Gemini API: [get Gemini API key](https://ai.google.dev/gemini-api/docs/api-key))
+3) Run the following commands in your Docker-enabled terminal:
 ```bash
 docker build -t med_qa_app .
 docker run -d --name med_qa -p 5000:5000 med_qa_app
@@ -51,13 +52,14 @@ docker run -d --name med_qa -p 5000:5000 med_qa_app
 <div style="border:1px solid #ffffffff; padding:12px 16px; border-radius:6px;">
 <strong>📝 Note</strong>
 <ul style="margin:8px 0 0 18px; padding:0;">
-  <li>Build takes ~22 minutes on a standard machine.</li>
-  <li>After running the <code>docker run</code> command, the server may take a minute or two to start responding so please be patient.</li>
+  <li>Build takes ~22 minutes on a standard machine.</li>
+  <li>After running the <code>docker run</code> command, the server may take a minute or two to start responding, so please be patient.</li>
 </ul>
 </div>
 
 <a name="the-raw-project-run"></a>
 ### The Raw Project Run <img src="utiles/conda_icon.png" alt="Docker logo" width="35" style="vertical-align: middle;" />
+
 1) Do steps 1,2 from the easy way.
 2) Creating the Conda environment:
 - Open an Anaconda/Miniconda shell.
@@ -83,12 +85,12 @@ docker run -d --name med_qa -p 5000:5000 med_qa_app
   - Build the Milvus vector DB from scratch (not recommended and supports Linux only).
 - Ensure your .env has a proper PATH_TO_MILVUS_DB value as described there.
 
-4) Runing the pipeline:
-- After Milvus is up and reachable run from the project root:<br>
+4) Running the pipeline:
+- After Milvus is up and reachable, run from the project root:<br>
 
   Linux + Windows:
   ```bash
-  python pipeline.py
+    python pipeline.py
   ```
 
 Enjoy!
@@ -98,32 +100,17 @@ Enjoy!
 <img style="vertical-align: middle;" src="utiles/pipeline.png" alt="Project logo" />
 
 <br><br><br>
-This project presents a robust, three-stage **knowledge-grounded clinical decision support pipeline**. Its primary objective is to transform a patient's free-text clinical query (symptoms and associated health concerns) into an **accurate, medically responsible, and highly interpretable structured response**. The system achieves this by integrating structured clinical knowledge via a Graph Neural Network (GNN) with comprehensive evidence retrieval using Retrieval-Augmented Generation (RAG).
 
-### Part 1: Context Expansion and Evidence Elicitation
+### Part 1 - Context Expansion
+First, the user writes a complaint including their symptoms and additional known conditions. Then we expand upon what he wrote using 2 steps:
 
-This initial phase systematically expands the user's raw input query by identifying plausible diagnoses and retrieving supporting evidence.
+ #### A) GNN-based Desease Prediction <img align="right" src="utiles/gnn_pipeline.png" alt="Docker logo" width="110" style="vertical-align: right;"/>
+ Based on past medical data collected from medical records of patients' complaints and doctors' diagnoses, we train a Graph Neural Network (GNN) model to predict possible diseases based on the symptoms provided by the user. Specifically, for each person in the training data, we build a designated graph. The way we do it is we represent him as a node and connect him to his "symptom nodes" based on his description, and those symptom nodes to "disease nodes" based on co-occurrence in the training data (this step is hard-coded and has additional minor details we skip here and get more into in the report). Then, using diseases described in his doctor's diagnosis as ground truth labels, we train a GNN model to predict possible diseases for new users based on their symptoms (the exact GNN architecture and training details are in the report).
+ #### B) RAG-based Document Retrieval <img align="right" src="utiles/rag_pipeline.png" alt="Docker logo" width="110" style="vertical-align: right;"/>
+ After we have a set of possible diseases from the GNN model, we use Retrieval-Augmented Generation (RAG) to retrieve relevant medical abstracts from the <b>2016 Clinical Decision Support Track</b> dataset containing ~1.2M medical papers from PubMed Central tackling a similar problem to ours - retrieving relevant medical papers based on users' complaints. We took only the abstracts of the papers and additional information like title, authors, journal name, etc. We built a vector database using PubMedBERT embeddings for vector representations, and an IVF_FLAT index for fast retrieval (using k-means to divide the vector DB into 64 clusters and searching each time among the 10 closest ones for speed).
+ Now, using the possible diseases from the GNN model as additional context, we query the vector database to retrieve relevant medical abstracts.
 
-#### A) Knowledge Graph-Informed Diagnosis (GNN)
-
-A Graph Neural Network (GNN) module is deployed to infer a ranked set of candidate diagnoses based on the reported symptoms.
-
-* **Knowledge Graph Foundation:** A heterogeneous symptom-disease knowledge graph, derived from historical patient data, encodes clinically validated associations and co-occurrence patterns.
-* **Patient-Specific Reasoning:** For a new query, the system dynamically inserts a **patient node**, connecting it to identified symptoms. This forms a specialized graph that allows the GNN to perform individualized reasoning.
-* **Training and Prediction:** The GNN, implemented with a two-layer **GraphSAGE** model, is trained using the doctor's diagnoses as ground truth labels. During inference, the GNN propagates information across the graph structure to generate a probability distribution over potential diseases, yielding the top candidate diagnoses. This method ensures predictions are consistent with established clinical structure and empirical patient outcomes.
-
-#### B) Evidence-Based Retrieval (RAG) 
-
-A Retrieval-Augmented Generation (RAG) framework is used to surface relevant clinical evidence from biomedical literature.
-
-* **Corpus:** The retrieval corpus consists of PubMed abstracts sourced from the **2016 Clinical Decision Support Track**.
-* **Indexing and Search:** Documents are encoded into a semantic space using **PubMedBERT** for robust vector representations. These embeddings are stored in a vector database utilizing an **IVF\_FLAT** index for efficient Approximate Nearest-Neighbor (ANN) search. This index is optimized for speed by partitioning the database into **64 clusters** (via k-means) and searching only the 10 closest clusters for each query.
-* **Graph-Informed Query Expansion:** To optimize retrieval accuracy, the input query is augmented by concatenating it with the candidate diagnoses from the GNN. This crucial step ensures the retrieval process is contextually rich and aligned with the structured diagnostic hypotheses. The resulting relevant medical abstracts form the evidence set.
-* 
----
-
-### Part 2: Controlled Diagnostic Response Generation
-
+### Part 2 - Answer Generation
 The final step synthesizes all compiled knowledge into a coherent clinical response.
 
 * **Generative Model:** We utilize the **Google Gemini 2.5 Flash Lite** Large Language Model (LLM), selected for its efficient reasoning capability, operating under a controlled, low-temperature setting ($\tau=0.2$).
@@ -133,18 +120,15 @@ The final step synthesizes all compiled knowledge into a coherent clinical respo
     * Recommend **responsible next steps** (e.g., monitoring, seeking professional consultation).
     * Conclude with a mandatory **safety disclaimer**.
 
----
-
 <a name="about-the-code"></a>
 ## About The Code
+In the end, it all comes down to the <b>pipeline.py</b> file. This file connects all the pieces together for a full run of the project.<br><br>
+The main steps are:
+1) Acquire potential diseases using the GNN model with <code>graph_model.text_forward(user_input)</code>
+2) retrieve relevant medical abstracts using RAG with <code>searcher.search(prompt, limit=5)</code>
+3) generate the final answer using the LLM with <code>run_generation(query, graph_results, search_results_with_gnn)</code>
 
-The complete system orchestration is managed by the **pipeline.py** script, which seamlessly integrates the GNN, RAG, and LLM components.
-
-The core execution flow involves three main function calls:
-
-1) Acquisition of potential Diseases using the GNN model with <code>graph_model.text_forward(user_input)</code>
-2) Retrieval of relevant bimedical evidence with <code>searcher.search(prompt, limit=5)</code>
-3) Generation of the final answer using the LLM with <code>run_generation(query, graph_results, search_results_with_gnn)</code>
+Of course, there are some additional optional parameters that the functions get, and these are used for testing purposes only (like providing ground truth diagnosis for the <code>run_generation</code> function to get desired evaluation metrics).
 
 
 
