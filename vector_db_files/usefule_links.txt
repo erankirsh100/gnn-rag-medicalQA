@@ -2,4 +2,4 @@
 https://trec.nist.gov/data/clinical2016.html
 
 #########Milvus Indexed Dataset#################
-https://drive.google.com/drive/folders/1IELiQofmruiPh4hCxCye0T1UhSIMWitE?usp=sharing
+https://technionmail-my.sharepoint.com/my?id=%2Fpersonal%2Fsasson%5Fnoam%5Fcampus%5Ftechnion%5Fac%5Fil%2FDocuments%2Frag%5Fgnn%5Fproject%2Fmilvus%5Fpmc%5Ffull%2Ezip&parent=%2Fpersonal%2Fsasson%5Fnoam%5Fcampus%5Ftechnion%5Fac%5Fil%2FDocuments%2Frag%5Fgnn%5Fproject&ga=1
