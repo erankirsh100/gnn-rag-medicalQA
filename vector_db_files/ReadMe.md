@@ -7,7 +7,7 @@
 - [Build the Milvus Vector DB from scratch](#build-the-milvus-vector-db)
 
 
-Supported platforms: Windows and Linux.
+Supported platforms: Windows <img src="../utiles/windows_icon.png" alt="Windows logo" width="15" style="vertical-align: middle;" /> and Linux <img src="../utiles/linux_icon.png" alt="Linux logo" width="15" style="vertical-align: middle;" />.
 
 We present to you 2 options:<br>
 * The easy way😇: download and use our ready-to-use Milvus vector DB! (recommended)
@@ -44,7 +44,6 @@ PATH_TO_MILVUS_DB=./milvus_pmc.db
   PATH_TO_MILVUS_DB=http://127.0.0.1:19530
   ```
   No quotes are required.
-- On Windows, run shell scripts with Git Bash or WSL.
 <br><br>
 
 <a id="build-the-milvus-vector-db"></a>

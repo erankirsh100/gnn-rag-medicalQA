@@ -15,7 +15,7 @@ Welcome to our gnn-rag-medicalQA project!
 The purpose of this project is to identify potential diseases from a user complaint that includes symptoms and any known conditions.
 
 Platforms
-- Supports Linux and Windows operating systems.
+- Supports Linux <img src="utiles/linux_icon.png" alt="Docker logo" width="15" style="vertical-align: middle;" /> and Windows <img src="utiles/windows_icon.png" alt="Docker logo" width="15" style="vertical-align: middle;" /> operating systems.
 - Make sure to have <b>Docker installed</b> for the <b>easy run option</b>.
 - Make sure to have <b>Conda</b> installed for the <b>raw project run option</b>. You may need to install Docker either way if you want to run on Windows.
 
