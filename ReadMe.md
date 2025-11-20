@@ -11,8 +11,8 @@
 - [Download / Build the Full Vector DB](vector_db_files/ReadMe.md#download-and-use)🗄️
 
 <a name="welcome-to-our-gnn-rag-medicalqa-project"></a>
-Welcome to our gnn-rag-medicalQA project!
-The purpose of this project is to identify potential diseases from a user complaint that includes symptoms and any known conditions.
+## Welcome to our gnn-rag-medicalQA project!
+This project aims to identify potential diseases from a user's query consisting of reported symptoms and any known medical conditions.
 
 Platforms
 - Supports Linux <img src="utiles/linux_icon.png" alt="Docker logo" width="15" style="vertical-align: middle;" /> and Windows <img src="utiles/windows_icon.png" alt="Docker logo" width="15" style="vertical-align: middle;" /> operating systems.
@@ -99,36 +99,36 @@ Enjoy!
 ## How Does It Work?
 <img style="vertical-align: middle;" src="utiles/pipeline.png" alt="Project logo" />
 
-<br><br><br>
+<br><br>
+The system operates in two main stages: **Context Expansion** and **Answer Generation**, combining Graph Neural Networks (GNN) and Retrieval-Augmented Generation (RAG) into a single diagnostic support pipeline.
 
 ### Part 1 - Context Expansion
-First, the user writes a complaint including their symptoms and additional known conditions. Then we expand upon what he wrote using 2 steps:
+The process begins with a user-provided query describing symptoms and relevant medical history. The system expands this input using two complementary components.
 
- #### A) GNN-based Desease Prediction <img align="right" src="utiles/gnn_pipeline.png" alt="Docker logo" width="110" style="vertical-align: right;"/>
- Based on past medical data collected from medical records of patients' complaints and doctors' diagnoses, we train a Graph Neural Network (GNN) model to predict possible diseases based on the symptoms provided by the user. Specifically, for each person in the training data, we build a designated graph. The way we do it is we represent him as a node and connect him to his "symptom nodes" based on his description, and those symptom nodes to "disease nodes" based on co-occurrence in the training data (this step is hard-coded and has additional minor details we skip here and get more into in the report). Then, using diseases described in his doctor's diagnosis as ground truth labels, we train a GNN model to predict possible diseases for new users based on their symptoms (the exact GNN architecture and training details are in the report).
+ #### A) GNN-based Disease Prediction <img align="right" src="utiles/gnn_pipeline.png" alt="Docker logo" width="110" style="vertical-align: right;"/>
+Based on historical medical data derived from patient querys and physician diagnoses, we train a Graph Neural Network (GNN) to predict potential diseases from a user’s reported symptoms.
+For each individual in the training dataset, we construct a dedicated graph: the patient is represented as a node, which is connected to “symptom nodes” extracted from their query. These symptom nodes are connected to “disease nodes” according to symptom–disease co-occurrence patterns observed in the data. (The construction of the main graph is hard-coded and includes several additional details that are discussed in the accompanying report.) The diseases recorded in the physician’s diagnosis serve as ground-truth labels, and using this graph structure, the GNN is trained to infer likely diseases for new user inputs based solely on their symptom descriptions. The specific architecture and training procedure are detailed in the report.
+ 
  #### B) RAG-based Document Retrieval <img align="right" src="utiles/rag_pipeline.png" alt="Docker logo" width="110" style="vertical-align: right;"/>
- After we have a set of possible diseases from the GNN model, we use Retrieval-Augmented Generation (RAG) to retrieve relevant medical abstracts from the <b>2016 Clinical Decision Support Track</b> dataset containing ~1.2M medical papers from PubMed Central tackling a similar problem to ours - retrieving relevant medical papers based on users' complaints. We took only the abstracts of the papers and additional information like title, authors, journal name, etc. We built a vector database using PubMedBERT embeddings for vector representations, and an IVF_FLAT index for fast retrieval (using k-means to divide the vector DB into 64 clusters and searching each time among the 10 closest ones for speed).
- Now, using the possible diseases from the GNN model as additional context, we query the vector database to retrieve relevant medical abstracts.
+Once the GNN produces a set of candidate diseases, we apply Retrieval-Augmented Generation (RAG) to retrieve relevant medical abstracts from the <b>2016 Clinical Decision Support Track</b> dataset containing ~1.2M medical papers from PubMed Central tackling a similar problem to ours - retrieving relevant medical papers based on users' querys. We use only the abstracts and associated metadata (e.g., title, authors, journal). A vector database is constructed using PubMedBERT embeddings, organized with an IVF_FLAT index for efficient similarity search. The IVF_FLAT structure partitions the embedding space into 64 clusters via k-means and searches the 10 nearest clusters during retrieval to balance speed and accuracy. Using the GNN-predicted diseases as additional context, the system queries this vector database to obtain the most relevant medical abstracts for downstream reasoning.
 
 ### Part 2 - Answer Generation
 The final step synthesizes all compiled knowledge into a coherent clinical response.
-
-* **Generative Model:** We utilize the **Google Gemini 2.5 Flash Lite** Large Language Model (LLM), selected for its efficient reasoning capability, operating under a controlled, low-temperature setting ($\tau=0.2$).
-* **Prompt Engineering for Safety and Accuracy:** The LLM is conditioned on the original user query, the structured disease hypotheses, and the retrieved evidence. The prompt is meticulously engineered to enforce medically responsible generation, requiring the model to:
-    * Formulate a cohesive **diagnostic hypothesis**.
-    * Present transparent **clinical reasoning** that integrates both structured (GNN) and retrieved (RAG) evidence.
-    * Recommend **responsible next steps** (e.g., monitoring, seeking professional consultation).
-    * Conclude with a mandatory **safety disclaimer**.
+We utilize the Google Gemini 2.5 Flash Lite Large Language Model (LLM), selected for its efficient reasoning capability, operating under a controlled, low-temperature setting ($\tau=0.2$). The LLM is conditioned on the original user query, the structured disease hypotheses, and the retrieved evidence. The prompt is meticulously engineered to enforce medically responsible generation, requiring the model to:
+    * Formulate a cohesive diagnostic hypothesis.
+    * Present transparent clinical reasoning that integrates both structured (GNN) and retrieved (RAG) evidence.
+    * Recommend responsible next steps (e.g., monitoring, seeking professional consultation).
+    * Conclude with a mandatory safety disclaimer.
 
 <a name="about-the-code"></a>
 ## About The Code
-In the end, it all comes down to the <b>pipeline.py</b> file. This file connects all the pieces together for a full run of the project.<br><br>
-The main steps are:
+The complete system orchestration is managed by the **pipeline.py** script, which integrates the GNN, RAG, and LLM components for a full run of the project.<br>
+
+The core execution flow involves three main function calls:
 1) Acquire potential diseases using the GNN model with <code>graph_model.text_forward(user_input)</code>
-2) retrieve relevant medical abstracts using RAG with <code>searcher.search(prompt, limit=5)</code>
-3) generate the final answer using the LLM with <code>run_generation(query, graph_results, search_results_with_gnn)</code>
+2) Retrieve relevant medical abstracts using RAG with <code>searcher.search(prompt, limit=5)</code>
+3) Generate the final answer using the LLM with <code>run_generation(query, graph_results, search_results_with_gnn)</code>
 
-Of course, there are some additional optional parameters that the functions get, and these are used for testing purposes only (like providing ground truth diagnosis for the <code>run_generation</code> function to get desired evaluation metrics).
-
+Additional optional parameters exist for evaluation and testing, such as supplying ground-truth diagnoses to compute performance metrics.
 
 
